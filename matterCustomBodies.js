@@ -1,11 +1,11 @@
-function matterRect(_x, _y, _w, _h, game, _options) {
+function rect(_x, _y, _w, _h, game, _options) {
 
 	this.w = _w;
 	this.h = _h;
 	
 	this.options = _options || {};
 	
-	this.body = game.PBodies.rectangle(_x, _y, _w, _h, this.options);
+	this.body = Matter.Bodies.rectangle(_x, _y, _w, _h, this.options);
 	
 	this.body.wrapper = this;
 	
@@ -42,5 +42,5 @@ function matterRect(_x, _y, _w, _h, game, _options) {
 		
 	}	
 	
-	game.PWorld.add(game.pengine.world, this.body);
+	Matter.World.add(game.pengine.world, this.body);
 }

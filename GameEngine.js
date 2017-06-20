@@ -1,7 +1,14 @@
 function GameEngine(w_, h_) {
 	
-	this.w = w_ || window.innerWidth;
-	this.w = h_ || window.innerHeight;
+	this.w = (w_ || window.innerWidth);
+	this.h = (h_ || window.innerHeight);
+	
+	var game = this;
+	
+	var STATIC = 0;
+	var FOLLOW_PLAYER = 1;
+	
+	var localPlayer;
 	
 	this.keyCodes = {
 		
@@ -15,6 +22,7 @@ function GameEngine(w_, h_) {
 	this.gameLoopListeners = [];
 	this.keyListeners = [];
 	this.mousePressedListeners = [];
+	this.gameSetupListeners = [];
 	
 	this.PEngine = Matter.Engine;
 	//this.PRender = Matter.Render;
@@ -23,37 +31,45 @@ function GameEngine(w_, h_) {
 	
 	this.pengine = this.PEngine.create();
 	
-	var game = this;
+	this.players
 	
 	this.sketch = function(p5js) {
 		
 		p5js.setup = function() {
-			p5js.createCanvas(this.w, this.h);
+			p5js.createCanvas(game.w, game.h);
 			p5js.rectMode(p5js.CENTER);
+			//p5js.background(51);
+			game.loadLevel(new GameLevel());
 			
-	
+			game.gameSetupListeners.forEach(function(item, index) {
+				
+				item(p5js);
+				
+			});			
 		}
 		
 		p5js.draw = function() {
 			p5js.background(51);
-			//console.log(this);
-			game.PEngine.update(game.pengine)
-			Matter.Composite.allBodies(game.pengine.world).forEach(function(item, index) {
-				
-				item.wrapper.show(p5js);
-				
-			});
+			
 			game.gameLoopListeners.forEach(function(item, index) {
 				
 				item(p5js);
 				
 			});
+			
+			game.PEngine.update(game.pengine)
+			
+			Matter.Composite.allBodies(game.pengine.world).forEach(function(item, index) {
+				
+				item.wrapper.show(p5js);
+				
+			});	
 		}
 		
 		p5js.mousePressed = function() {
 			game.mousePressedListeners.forEach(function(item, index) {
 				
-				item();
+				item(p5js);
 				
 			});
 		}
@@ -64,11 +80,11 @@ function GameEngine(w_, h_) {
 				
 				if (item.keyCode != null && p5js.keyCode == item.keyCode) {
 					
-					item.callback(p5js.keyCode);
+					item.callback(p5js);
 					
 				} else if (item.keyCode == null) {
 					
-					item();
+					item(p5js);
 					
 				}
 				
@@ -86,6 +102,12 @@ function GameEngine(w_, h_) {
 		
 	}
 	
+		this.addGameSetupListener = function(gameLoop) {
+		
+		this.gameSetupListeners.push(gameLoop);
+		
+	}
+	
 	this.addKeyListener = function(keyListener) {
 		
 		this.keyListeners.push(keyListener);
@@ -98,6 +120,32 @@ function GameEngine(w_, h_) {
 		
 	}	
 	
-	console.log(this);
+	this.loadLevel = function(level) {
+		
+		this.PWorld.clear(this.pengine.world, false)
+		new rect(this.p5js.width/2, this.p5js.height, this.p5js.width, 30, this, {isStatic:true});		
+		level.world.forEach(function(item, index) {
+				
+			this.PWorld.add(this.pengine.world, item.body)
+				
+		});	
+		
+	}	
+	
+	this.spawnPlayer = function(x , y) {
+		var pl = new Player(x, y);
+			
+		
+		
+		return pl;
+	}
+	
+	this.setCameraMode = function(mode) {
+		
+		
+		
+	}
+	
+	//console.log(this);
 	
 }
