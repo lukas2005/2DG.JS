@@ -4,7 +4,7 @@ var game = new GameEngine(600,400);
 
 function gameSetup(p5js) {
 	
-	new Player(10, 10, game);
+	game.spawnPlayer(10, 10);
 	
 }
 

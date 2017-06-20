@@ -1,3 +1,9 @@
+if (typeof Matter == 'undefined' || typeof p5 == 'undefined') {
+	
+	alert("You don't have all the dependencies included! look at https://github.com/lukas2005/2DG.JS");
+	
+}
+
 function GameEngine(w_, h_) {
 	
 	this.w = (w_ || window.innerWidth);
@@ -8,7 +14,7 @@ function GameEngine(w_, h_) {
 	var STATIC = 0;
 	var FOLLOW_PLAYER = 1;
 	
-	var localPlayer;
+	this.localPlayer = null;
 	
 	this.keyCodes = {
 		
@@ -31,7 +37,7 @@ function GameEngine(w_, h_) {
 	
 	this.pengine = this.PEngine.create();
 	
-	this.players
+	this.players = [];
 	
 	this.sketch = function(p5js) {
 		
@@ -57,11 +63,33 @@ function GameEngine(w_, h_) {
 				
 			});
 			
+			if (game.localPlayer != null) {
+				
+				game.localPlayer.update();
+				game.localPlayer.show(p5js);
+				
+			}
+			
 			game.PEngine.update(game.pengine)
 			
 			Matter.Composite.allBodies(game.pengine.world).forEach(function(item, index) {
 				
-				item.wrapper.show(p5js);
+				if (item.wrapper != null) {
+					
+					item.wrapper.show(p5js);
+				
+				} else {
+					p5js.fill(255);
+					p5js.beginShape();
+					
+					item.vertices.forEach(function(item, index) {
+						
+						p5js.vertex(item.x,item.y);
+						
+					});
+					
+					p5js.endShape(p5js.CLOSE);
+				}
 				
 			});	
 		}
@@ -90,6 +118,13 @@ function GameEngine(w_, h_) {
 				
 			});			
 			
+			if (game.localPlayer != null) {
+				console.log("player!");
+				if (p5js.keyIsDown(87) || p5js.keyIsDown(38) || p5js.keyIsDown(32)) { // Up
+					game.localPlayer.jump();
+				}
+				game.localPlayer.keyEvent(p5js);
+			}
 		}
 		
 	}
@@ -133,9 +168,10 @@ function GameEngine(w_, h_) {
 	}	
 	
 	this.spawnPlayer = function(x , y) {
-		var pl = new Player(x, y);
-			
+		var pl = new Player(x, y, this);
 		
+		if (this.localPlayer == null) this.localPlayer = pl;
+		this.players.push(pl);
 		
 		return pl;
 	}
@@ -147,5 +183,61 @@ function GameEngine(w_, h_) {
 	}
 	
 	//console.log(this);
+	
+	//Matter.js Events
+	
+	Matter.Events.on(this.pengine, 'collisionActive', function(e) {
+		var allBodies = Matter.Composite.allBodies(game.pengine.world);
+		for (var i=0; i < allBodies.length; i++) {
+			for (var j=0; j < e.pairs.length; j++) {
+				if (e.pairs[j].bodyA === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionActive(e.pairs[j].bodyB);
+					
+				} else if (e.pairs[j].bodyB === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionActive(e.pairs[j].bodyA);
+					
+				}
+			}
+		}	
+		
+	});
+
+	Matter.Events.on(this.pengine, 'collisionStart', function(e) {
+		var allBodies = Matter.Composite.allBodies(game.pengine.world);
+		for (var i=0; i < allBodies.length; i++) {
+			for (var j=0; j < e.pairs.length; j++) {
+				if (e.pairs[j].bodyA === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionStart(e.pairs[j].bodyB);
+					
+				} else if (e.pairs[j].bodyB === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionStart(e.pairs[j].bodyA);
+					
+				}
+			}
+		}	
+		
+	});
+
+	Matter.Events.on(this.pengine, 'collisionEnd', function(e) {
+		var allBodies = Matter.Composite.allBodies(game.pengine.world);
+		for (var i=0; i < allBodies.length; i++) {
+			for (var j=0; j < e.pairs.length; j++) {
+				if (e.pairs[j].bodyA === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionEnd(e.pairs[j].bodyB);
+					
+				} else if (e.pairs[j].bodyB === allBodies[i]) {
+					
+					if (allBodies.wrapper != null) allBodies[i].wrapper.collisionEnd(e.pairs[j].bodyA);
+					
+				}
+			}
+		}	
+		
+	});
 	
 }

@@ -107,13 +107,13 @@ function Player(x, y, game) {
 		
 	}		
 	
-	this.keyEvent = function() {
+	this.keyEvent = function(p5js) {
 		
-		if (keyIsDown(68) || keyIsDown(39)) { // Right
+		if (p5js.keyIsDown(68) || p5js.keyIsDown(39)) { // Right
 			
 			this.force = Matter.Vector.create(this.movementSpeed, this.lastForce.y);
 			
-		} else if (keyIsDown(65) || keyIsDown(37)) { // Left
+		} else if (p5js.keyIsDown(65) || p5js.keyIsDown(37)) { // Left
 			
 			this.force = Matter.Vector.create(-this.movementSpeed, this.lastForce.y);
 			
